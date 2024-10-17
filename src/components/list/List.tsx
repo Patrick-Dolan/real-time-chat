@@ -3,8 +3,8 @@ import UserInfo from "./UserInfo";
 
 function List() {
   return (
-    <div className="w-1/4 p-4">
-      <div className="mb-4">
+    <div className="w-1/4 overflow-hidden flex flex-col">
+      <div className="p-4">
         <UserInfo />
       </div>
       <ChatList />
