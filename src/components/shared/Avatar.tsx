@@ -22,7 +22,7 @@ function Avatar({ rounded, size }: AvatarProps) {
         rounded ? "rounded-full" : ""
       } ${sizeStyles}`}
     >
-      <img src="/assets/icons/AvatarIcon.svg" alt="Avatar" className="h-2/3" />
+      <img src="/assets/icons/AvatarIcon.svg" alt="Avatar" className="h-2/3 object-cover" />
     </div>
   );
 }
