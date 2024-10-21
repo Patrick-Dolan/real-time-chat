@@ -47,7 +47,7 @@ function Detail() {
                   className="rounded-lg h-10"
                 />
                 <span className="text-sm text-gray-300 font-light">
-                  photoname.png
+                  photo-name.png
                 </span>
               </div>
               <img
@@ -64,7 +64,7 @@ function Detail() {
                   className="rounded-lg h-10"
                 />
                 <span className="text-sm text-gray-300 font-light">
-                  photoname.png
+                  photo-name.png
                 </span>
               </div>
               <img
@@ -81,7 +81,7 @@ function Detail() {
                   className="rounded-lg h-10"
                 />
                 <span className="text-sm text-gray-300 font-light">
-                  photoname.png
+                  photo-name.png
                 </span>
               </div>
               <img
@@ -104,6 +104,9 @@ function Detail() {
         </div>
         <button className="bg-red-700 px-6 py-2 hover:bg-red-800">
           Block User
+        </button>
+        <button className="bg-blue-700 px-6 py-2 hover:bg-blue-800">
+          Logout
         </button>
       </div>
     </div>
