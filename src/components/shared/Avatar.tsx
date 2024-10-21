@@ -1,9 +1,10 @@
 interface AvatarProps {
   rounded?: boolean;
   size: "sm" | "md";
+  avatarURL?: string;
 }
 
-function Avatar({ rounded, size }: AvatarProps) {
+function Avatar({ rounded, size, avatarURL }: AvatarProps) {
   let sizeStyles: string = "";
 
   switch (size) {
@@ -22,7 +23,13 @@ function Avatar({ rounded, size }: AvatarProps) {
         rounded ? "rounded-full" : ""
       } ${sizeStyles}`}
     >
-      <img src="/assets/icons/AvatarIcon.svg" alt="Avatar" className="h-2/3 object-cover" />
+      <img
+        src={avatarURL || "/assets/icons/AvatarIcon.svg"}
+        alt="Avatar"
+        className={
+          avatarURL ? "h-full w-full object-cover" : "h-2/3 object-cover"
+        }
+      />
     </div>
   );
 }
