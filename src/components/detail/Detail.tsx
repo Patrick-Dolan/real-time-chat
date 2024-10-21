@@ -13,8 +13,8 @@ function Detail() {
           <div className="title flex justify-between">
             <span>Chat Settings</span>
             <img
-              src="/assets/icons/ArrowUpIcon.svg"
-              alt=""
+              src="/assets/icons/ArrowDownIcon.svg"
+              alt="Arrow down"
               className="cursor-pointer bg-slate-800"
             />
           </div>
@@ -23,8 +23,8 @@ function Detail() {
           <div className="title flex justify-between">
             <span>Privacy & Help</span>
             <img
-              src="/assets/icons/ArrowUpIcon.svg"
-              alt=""
+              src="/assets/icons/ArrowDownIcon.svg"
+              alt="Arrow down"
               className="cursor-pointer bg-slate-800"
             />
           </div>
@@ -33,8 +33,8 @@ function Detail() {
           <div className="title flex justify-between">
             <span>Shared Photos</span>
             <img
-              src="/assets/icons/ArrowDownIcon.svg"
-              alt=""
+              src="/assets/icons/ArrowUpIcon.svg"
+              alt="Arrow up"
               className="cursor-pointer bg-slate-800"
             />
           </div>
@@ -96,13 +96,15 @@ function Detail() {
           <div className="title flex justify-between">
             <span>Shared Files</span>
             <img
-              src="/assets/icons/ArrowUpIcon.svg"
-              alt=""
+              src="/assets/icons/ArrowDownIcon.svg"
+              alt="Arrow down"
               className="cursor-pointer bg-slate-800"
             />
           </div>
         </div>
-        <button className="bg-red-800 px-6 py-2">Block User</button>
+        <button className="bg-red-700 px-6 py-2 hover:bg-red-800">
+          Block User
+        </button>
       </div>
     </div>
   );
