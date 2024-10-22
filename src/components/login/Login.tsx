@@ -1,14 +1,9 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import Avatar from "../shared/Avatar";
 import { toast } from "react-toastify";
-import {
-  createUserWithEmailAndPassword,
-  UserCredential,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { auth, db } from "../../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
 import uploadImage from "../../lib/uploadImage";
+import { useFirebaseContext } from "../../context/FirebaseContext";
+import { UserDetails } from "../../interfaces";
 
 interface AvatarFile {
   file: File | null;
@@ -31,6 +26,8 @@ const inputStyles = "bg-slate-800 p-2 rounded-lg";
 function Login() {
   const [avatar, setAvatar] = useState<AvatarFile>({ file: null, url: "" });
   const [loading, setLoading] = useState(false);
+
+  const { signIn, registerUser } = useFirebaseContext();
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -55,7 +52,7 @@ function Login() {
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
+      await signIn(email, password);
       formRef.reset();
       toast.success("You're signed in!");
     } catch (error) {
@@ -79,25 +76,16 @@ function Login() {
 
     try {
       setLoading(true);
-      const response: UserCredential = await createUserWithEmailAndPassword(
-        auth,
+      const imageURL = avatar.file ? await uploadImage(avatar.file) : "";
+      const user: UserDetails = {
         email,
-        password
-      );
-      const imageURL =
-        avatar.file !== null ? await uploadImage(avatar.file) : "";
-      await setDoc(doc(db, "users", response.user.uid), {
+        password,
         username,
-        email,
-        avatar: imageURL,
-        id: response.user.uid,
-        blocked: [],
-      });
-      await setDoc(doc(db, "userchats", response.user.uid), {
-        chats: [],
-      });
+        imageURL,
+      };
+      await registerUser(user);
       formRef.reset();
-      toast.success("Account created! You can log in now!");
+      toast.success("Account created!");
     } catch (error) {
       toast.error((error as Error).message);
     } finally {

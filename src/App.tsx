@@ -4,25 +4,20 @@ import Detail from "./components/detail/Detail";
 import List from "./components/list/List";
 import Login from "./components/login/Login";
 import Notification from "./components/shared/Notification";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "./lib/firebase";
+import { User } from "firebase/auth";
+import { useFirebaseContext } from "./context/FirebaseContext";
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user } = useFirebaseContext();
 
   useEffect(() => {
-    const unSub = onAuthStateChanged(auth, (user) => {
-      console.log(user);
-      setUser(user);
-    });
-    return () => {
-      unSub();
-    };
-  }, []);
+    setCurrentUser(user);
+  }, [user]);
 
   return (
     <div className="m-auto w-11/12 h-full bg-slate-400 dark:bg-slate-700 flex">
-      {user ? (
+      {currentUser ? (
         <>
           <List />
           <Chat />
