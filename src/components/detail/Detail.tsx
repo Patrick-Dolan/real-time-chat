@@ -1,6 +1,9 @@
+import { useFirebaseContext } from "../../context/FirebaseContext";
 import Avatar from "../shared/Avatar";
 
 function Detail() {
+  const { logout } = useFirebaseContext();
+
   return (
     <div className="w-1/4 overflow-y-auto">
       <div className="p-4 flex flex-col items-center gap-2 border-b border-black">
@@ -105,7 +108,10 @@ function Detail() {
         <button className="bg-red-700 px-6 py-2 hover:bg-red-800">
           Block User
         </button>
-        <button className="bg-blue-700 px-6 py-2 hover:bg-blue-800">
+        <button
+          onClick={logout}
+          className="bg-blue-700 px-6 py-2 hover:bg-blue-800"
+        >
           Logout
         </button>
       </div>
