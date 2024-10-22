@@ -1,7 +1,11 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import Avatar from "../shared/Avatar";
 import { toast } from "react-toastify";
-import { createUserWithEmailAndPassword, UserCredential } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  UserCredential,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth, db } from "../../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import uploadImage from "../../lib/uploadImage";
@@ -9,6 +13,17 @@ import uploadImage from "../../lib/uploadImage";
 interface AvatarFile {
   file: File | null;
   url: string;
+}
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+interface RegisterFormValues {
+  username: string;
+  email: string;
+  password: string;
 }
 
 const inputStyles = "bg-slate-800 p-2 rounded-lg";
@@ -27,23 +42,40 @@ function Login() {
     });
   };
 
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    toast.success("Hello");
+    const formRef = e.currentTarget as HTMLFormElement;
+    const formData = new FormData(e.currentTarget);
+    const formValues: LoginFormValues = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
+    const { email, password } = formValues;
+
+    try {
+      setLoading(true);
+      await signInWithEmailAndPassword(auth, email, password);
+      formRef.reset();
+      toast.success("You're signed in!");
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const formRef = e.currentTarget as HTMLFormElement;
     const formData = new FormData(e.currentTarget);
-    const formEntries = Object.fromEntries(formData.entries());
-
-    const { username, email, password } = formEntries as {
-      username: string;
-      email: string;
-      password: string;
+    const formValues: RegisterFormValues = {
+      username: formData.get("username") as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
     };
+    const { username, email, password } = formValues;
 
     try {
       setLoading(true);
@@ -64,8 +96,7 @@ function Login() {
       await setDoc(doc(db, "userchats", response.user.uid), {
         chats: [],
       });
-      console.log(response);
-      // e.currentTarget.reset();
+      formRef.reset();
       toast.success("Account created! You can log in now!");
     } catch (error) {
       toast.error((error as Error).message);
