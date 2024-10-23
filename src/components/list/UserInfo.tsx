@@ -1,11 +1,14 @@
 import Avatar from "../shared/Avatar";
+import { useUserStore } from "../../lib/userStore";
 
 function UserInfo() {
+  const { currentUser } = useUserStore();
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <Avatar size="sm" rounded={true} />
-        <h2 className="font-bold">John Doe</h2>
+        <Avatar size="sm" rounded={true} avatarURL={currentUser?.avatar} />
+        <h2 className="font-bold">{currentUser?.username}</h2>
       </div>
       <div className="flex gap-2 h-5">
         <img src="/assets/icons/MoreHorizontalIcon.svg" alt="More" />
