@@ -1,9 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Avatar from "../shared/Avatar";
 import AddUser from "./AddUser";
+import { useUserStore } from "../../lib/userStore";
+import { doc, DocumentData, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../../lib/firebase";
 
 function ChatList() {
   const [addMode, setAddMode] = useState(false);
+  const [chats, setChats] = useState<DocumentData | undefined>(undefined);
+
+  const { currentUser } = useUserStore();
+
+  interface Item {
+    chatId: string;
+    lastMessage: string;
+    receiverId: string;
+    updatedAt: number;
+  }
+
+  interface UserDetails {
+    username: string;
+    blocked: Array<string>;
+    email: string;
+    avatar: string;
+    id: string;
+  }
+
+  interface Chat {
+    chatId: string;
+    lastMessage: string;
+    receiverId: string;
+    updatedAt: number;
+    user: UserDetails;
+  }
+
+  useEffect(() => {
+    const unSub = onSnapshot(
+      doc(db, "userchats", currentUser?.id),
+      async (res) => {
+        const items = res.data()?.chats;
+
+        const promises = items.map(async (item: Item) => {
+          const userDocRef = doc(db, "users", item.receiverId);
+          const userDocSnap = await getDoc(userDocRef);
+
+          const user = userDocSnap.data();
+
+          return { ...item, user };
+        });
+
+        const chatData = await Promise.all(promises);
+
+        setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt));
+      }
+    );
+
+    return () => {
+      unSub();
+    };
+  }, [currentUser?.id]);
 
   const toggleAddMode = () => {
     setAddMode((prev) => !prev);
@@ -32,41 +87,18 @@ function ChatList() {
         />
       </div>
       <div className="flex flex-col flex-1 overflow-y-auto">
-        <div className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black">
-          <Avatar size="sm" rounded={true} />
-          <div className="text">
-            <span className="font-medium">Jane Doe</span>
-            <p className="text-sm font-light">Hello</p>
+        {chats?.map((chat: Chat) => (
+          <div
+            className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black"
+            key={chat.chatId}
+          >
+            <Avatar size="sm" rounded={true} avatarURL={chat.user.avatar} />
+            <div className="text">
+              <span className="font-medium">{chat.user.username}</span>
+              <p className="text-sm font-light">{chat.lastMessage}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black">
-          <Avatar size="sm" rounded={true} />
-          <div className="text">
-            <span className="font-medium">Jane Doe</span>
-            <p className="text-sm font-light">Hello</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black">
-          <Avatar size="sm" rounded={true} />
-          <div className="text">
-            <span className="font-medium">Jane Doe</span>
-            <p className="text-sm font-light">Hello</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black">
-          <Avatar size="sm" rounded={true} />
-          <div className="text">
-            <span className="font-medium">Jane Doe</span>
-            <p className="text-sm font-light">Hello</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black">
-          <Avatar size="sm" rounded={true} />
-          <div className="text">
-            <span className="font-medium">Jane Doe</span>
-            <p className="text-sm font-light">Hello</p>
-          </div>
-        </div>
+        ))}
         {!addMode || <AddUser />}
       </div>
     </>
