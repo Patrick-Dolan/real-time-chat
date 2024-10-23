@@ -28,7 +28,7 @@ function Avatar({ rounded, size, avatarURL }: AvatarProps) {
         alt="Avatar"
         className={
           avatarURL
-            ? "h-full w-full object-cover rounded-full"
+            ? `h-full w-full object-cover ${rounded ? "rounded-full" : ""}`
             : "h-2/3 object-cover"
         }
       />
