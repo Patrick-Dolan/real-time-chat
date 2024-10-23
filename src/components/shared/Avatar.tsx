@@ -27,7 +27,9 @@ function Avatar({ rounded, size, avatarURL }: AvatarProps) {
         src={avatarURL || "/assets/icons/AvatarIcon.svg"}
         alt="Avatar"
         className={
-          avatarURL ? "h-full w-full object-cover" : "h-2/3 object-cover"
+          avatarURL
+            ? "h-full w-full object-cover rounded-full"
+            : "h-2/3 object-cover"
         }
       />
     </div>
