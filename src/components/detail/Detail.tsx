@@ -1,4 +1,5 @@
 import Avatar from "../shared/Avatar";
+import { auth } from "../../lib/firebase";
 
 function Detail() {
   return (
@@ -105,7 +106,10 @@ function Detail() {
         <button className="bg-red-700 px-6 py-2 hover:bg-red-800">
           Block User
         </button>
-        <button className="bg-blue-700 px-6 py-2 hover:bg-blue-800">
+        <button
+          onClick={() => auth.signOut()}
+          className="bg-blue-700 px-6 py-2 hover:bg-blue-800"
+        >
           Logout
         </button>
       </div>
