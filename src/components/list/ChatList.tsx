@@ -2,37 +2,46 @@ import { useEffect, useState } from "react";
 import Avatar from "../shared/Avatar";
 import AddUser from "./AddUser";
 import { useUserStore } from "../../lib/userStore";
-import { doc, DocumentData, getDoc, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  DocumentData,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
+
+interface Item {
+  chatId: string;
+  lastMessage: string;
+  receiverId: string;
+  updatedAt: number;
+}
+
+interface UserDetails {
+  username: string;
+  blocked: Array<string>;
+  email: string;
+  avatar: string;
+  id: string;
+}
+
+interface ChatSelection {
+  chatId: string;
+  lastMessage: string;
+  receiverId: string;
+  updatedAt: number;
+  user: UserDetails;
+  isSeen?: boolean;
+}
 
 function ChatList() {
   const [addMode, setAddMode] = useState(false);
   const [chats, setChats] = useState<DocumentData | undefined>(undefined);
 
   const { currentUser } = useUserStore();
-
-  interface Item {
-    chatId: string;
-    lastMessage: string;
-    receiverId: string;
-    updatedAt: number;
-  }
-
-  interface UserDetails {
-    username: string;
-    blocked: Array<string>;
-    email: string;
-    avatar: string;
-    id: string;
-  }
-
-  interface Chat {
-    chatId: string;
-    lastMessage: string;
-    receiverId: string;
-    updatedAt: number;
-    user: UserDetails;
-  }
+  const { changeChat } = useChatStore();
 
   useEffect(() => {
     const unSub = onSnapshot(
@@ -64,6 +73,31 @@ function ChatList() {
     setAddMode((prev) => !prev);
   };
 
+  const handleChatSelect = async (chat: ChatSelection) => {
+    const userChats = chats?.map((item: ChatSelection) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { user, ...rest } = item;
+      return rest;
+    });
+
+    const chatIndex = userChats.findIndex(
+      (item: ChatSelection) => item.chatId === chat.chatId
+    );
+
+    userChats[chatIndex].isSeen = true;
+
+    const userChatsRef = doc(db, "userchats", currentUser?.id);
+
+    try {
+      await updateDoc(userChatsRef, {
+        chats: userChats,
+      });
+      changeChat(chat.chatId, chat.user);
+    } catch (err) {
+      console.log((err as Error).message);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between gap-3 p-4">
@@ -87,10 +121,13 @@ function ChatList() {
         />
       </div>
       <div className="flex flex-col flex-1 overflow-y-auto">
-        {chats?.map((chat: Chat) => (
+        {chats?.map((chat: ChatSelection) => (
           <div
-            className="flex items-center gap-4 cursor-pointer p-5 border-b border-b-black"
+            className={`flex items-center gap-4 cursor-pointer p-5 border-b border-b-black ${
+              chat?.isSeen ? "bg-transparent" : "bg-blue-500"
+            }`}
             key={chat.chatId}
+            onClick={() => handleChatSelect(chat)}
           >
             <Avatar size="sm" rounded={true} avatarURL={chat.user.avatar} />
             <div className="text">
