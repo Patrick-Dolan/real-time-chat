@@ -1,19 +1,137 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import Avatar from "../shared/Avatar";
 import EmojiPicker from "emoji-picker-react";
+import {
+  arrayUnion,
+  doc,
+  getDoc,
+  onSnapshot,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
+import { useUserStore } from "../../lib/userStore";
+import uploadImage from "../../lib/uploadImage";
+import SentMessage from "./SentMessage";
+import ReceivedMessage from "./ReceivedMessage";
+
+interface Chat {
+  createdAt: Timestamp;
+  messages: Array<Message>;
+}
+
+interface Message {
+  createdAt: string;
+  senderId: string;
+  img?: string;
+  text: string;
+}
+
+interface ImageFile {
+  file: File | null;
+  url: string;
+}
 
 function Chat() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [img, setImage] = useState<ImageFile>({
+    file: null,
+    url: "",
+  });
+  const [chat, setChat] = useState<Chat | null>(null);
+
+  const { currentUser } = useUserStore();
+  const { chatId, user } = useChatStore();
+
   const messageEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  useEffect(() => {
+    if (chatId) {
+      const unSub = onSnapshot(doc(db, "chats", chatId), (res) => {
+        setChat(res.data() as Chat);
+      });
+
+      return () => {
+        unSub();
+      };
+    }
+  }, [chatId]);
+
+  console.log(chat);
+
   const handleEmoji = (e: { emoji: string }) => {
     setText((prev) => prev + e.emoji);
     setOpen(false);
+  };
+
+  const handleSend = async () => {
+    if (text === "") return;
+
+    let imageUrl: string | null = null;
+
+    if (chatId) {
+      try {
+        if (img.file) {
+          imageUrl = await uploadImage(img.file);
+        }
+
+        await updateDoc(doc(db, "chats", chatId), {
+          messages: arrayUnion({
+            senderId: currentUser?.id,
+            text,
+            createdAt: new Date(),
+            ...(imageUrl && { img: imageUrl }),
+          }),
+        });
+
+        const userIds = [currentUser?.id, user?.id];
+
+        userIds.forEach(async (id) => {
+          const userChatsRef = doc(db, "userchats", id);
+          const userChatsSnapshot = await getDoc(userChatsRef);
+
+          if (userChatsSnapshot.exists()) {
+            const userChatsData = userChatsSnapshot.data();
+
+            const chatIndex = userChatsData.chats.findIndex(
+              (chat: { chatId: string }) => chat.chatId === chatId
+            );
+
+            userChatsData.chats[chatIndex].lastMessage = text;
+            userChatsData.chats[chatIndex].isSeen =
+              id === currentUser?.id ? true : false;
+            userChatsData.chats[chatIndex].updatedAt = Date.now();
+
+            await updateDoc(userChatsRef, {
+              chats: userChatsData.chats,
+            });
+          }
+        });
+      } catch (err) {
+        console.log((err as Error).message);
+      } finally {
+        setImage({ file: null, url: "" });
+        setText("");
+      }
+    } else {
+      console.log("Chat ID is null");
+    }
+  };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setImage({
+      file: files[0],
+      url: URL.createObjectURL(files[0]),
+    });
   };
 
   return (
@@ -40,45 +158,47 @@ function Chat() {
       </div>
       {/* Center */}
       <div className="flex-1 border-b border-black overflow-y-scroll flex flex-col gap-5 p-4">
-        <div className="max-w-7/10 flex gap-4">
-          <div>
-            <Avatar size="sm" rounded={true} />
-          </div>
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus
-              magni voluptatum sit, recusandae nemo nulla nesciunt porro
-              laboriosam cumque iusto! Impedit, corporis. Pariatur iste
-              voluptatibus dolorum aliquam fuga unde et?
-            </p>
-            <span className="text-sm">1 min ago</span>
-          </div>
-        </div>
-        <div className="max-w-7/10 ml-auto">
-          <div className="texts">
-            <img
-              src="https://i0.wp.com/katzenworld.co.uk/wp-content/uploads/2019/06/funny-cat.jpeg?fit=1020%2C1020&ssl=1"
-              alt="message image"
-              className="rounded-lg object-cover w-full"
+        {chat?.messages.map((message: Message) =>
+          message.senderId === currentUser?.id ? (
+            <SentMessage message={message} key={message.createdAt} />
+          ) : (
+            <ReceivedMessage
+              message={message}
+              avatar={user?.avatar || ""}
+              key={message.createdAt}
             />
-            <p className="bg-indigo-600 p-2 rounded-lg">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus
-              magni voluptatum sit, recusandae nemo nulla nesciunt porro
-              laboriosam cumque iusto! Impedit, corporis. Pariatur iste
-              voluptatibus dolorum aliquam fuga unde et?
-            </p>
-            <span className="text-sm">1 min ago</span>
+          )
+        )}
+        {/* Message display for uploading images to chat */}
+        {img.url && (
+          <div>
+            <div>
+              <img
+                src={img.url}
+                alt=""
+                className="rounded-lg object-cover w-full"
+              />
+            </div>
           </div>
-        </div>
+        )}
         <div ref={messageEndRef}></div>
       </div>
       {/* Bottom */}
       <div className="flex items-center p-4 justify-between gap-3 mt-auto">
         <div className="flex items-center p-2 gap-3">
-          <img
-            className="h-5 w-5 cursor-pointer"
-            src="/assets/icons/ImageIcon.svg"
-            alt="Image"
+          <label htmlFor="file">
+            <img
+              className="h-5 w-5 cursor-pointer"
+              src="/assets/icons/ImageIcon.svg"
+              alt="Image"
+            />
+          </label>
+          <input
+            type="file"
+            name="file"
+            id="file"
+            className="hidden"
+            onChange={handleImageChange}
           />
           <img
             className="h-5 w-5 cursor-pointer"
@@ -109,7 +229,12 @@ function Chat() {
             <EmojiPicker open={open} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button className="bg-indigo-800 py-2 px-3 rounded-lg">Send</button>
+        <button
+          className="bg-indigo-800 py-2 px-3 rounded-lg"
+          onClick={handleSend}
+        >
+          Send
+        </button>
       </div>
     </div>
   );
