@@ -5,7 +5,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-const uploadImage = async (file: File) => {
+const uploadImage = async (file: File): Promise<string> => {
   const storage = getStorage();
   const date = new Date();
   const storageRef = ref(storage, `images/${date + file.name}`);
