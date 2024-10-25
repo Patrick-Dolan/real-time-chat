@@ -38,6 +38,7 @@ interface ChatSelection {
 
 function ChatList() {
   const [addMode, setAddMode] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const [chats, setChats] = useState<DocumentData | undefined>(undefined);
 
   const { currentUser } = useUserStore();
@@ -98,6 +99,10 @@ function ChatList() {
     }
   };
 
+  const filteredChats = chats?.filter((c: ChatSelection) =>
+    c.user.username.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
     <>
       <div className="flex items-center justify-between gap-3 p-4">
@@ -107,6 +112,7 @@ function ChatList() {
             type="text"
             placeholder="Search"
             className="bg-transparent w-full m-1"
+            onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
         <img
@@ -121,7 +127,7 @@ function ChatList() {
         />
       </div>
       <div className="flex flex-col flex-1 overflow-y-auto">
-        {chats?.map((chat: ChatSelection) => (
+        {filteredChats?.map((chat: ChatSelection) => (
           <div
             className={`flex items-center gap-4 cursor-pointer p-5 border-b border-b-black ${
               chat?.isSeen ? "bg-transparent" : "bg-blue-500"
@@ -129,7 +135,15 @@ function ChatList() {
             key={chat.chatId}
             onClick={() => handleChatSelect(chat)}
           >
-            <Avatar size="sm" rounded={true} avatarURL={ chat.user.blocked.includes(currentUser?.id) ? "" : chat.user.avatar} />
+            <Avatar
+              size="sm"
+              rounded={true}
+              avatarURL={
+                chat.user.blocked.includes(currentUser?.id)
+                  ? ""
+                  : chat.user.avatar
+              }
+            />
             <div className="text">
               <span className="font-medium">
                 {chat.user.blocked.includes(currentUser?.id)
