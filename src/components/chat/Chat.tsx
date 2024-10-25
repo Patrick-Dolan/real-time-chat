@@ -43,7 +43,8 @@ function Chat() {
   const [chat, setChat] = useState<Chat | null>(null);
 
   const { currentUser } = useUserStore();
-  const { chatId, user } = useChatStore();
+  const { chatId, user, isReceiverBlocked, isCurrentUserBlocked } =
+    useChatStore();
 
   const messageEndRef = useRef<HTMLDivElement>(null);
 
@@ -138,9 +139,9 @@ function Chat() {
     <div className="flex flex-col flex-1 border-black border-l border-r h-full">
       <div className="p-4 flex items-center justify-between border-b border-black">
         <div className="flex items-center gap-4">
-          <Avatar rounded={true} size="sm" />
+          <Avatar rounded={true} size="sm" avatarURL={user?.avatar || ""} />
           <div className="flex flex-col gap-1">
-            <span className="text-lg font-bold">Jane Doe</span>
+            <span className="text-lg font-bold">{user?.username}</span>
             <p className="text-sm font-light">
               Lorem ipsum dolor sit amet consectetur adipisicing elit.
             </p>
@@ -213,9 +214,18 @@ function Chat() {
         </div>
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder={
+            isCurrentUserBlocked || isReceiverBlocked
+              ? "You cannot send a message to this user"
+              : "Type a message..."
+          }
           value={text}
-          className="flex-1 p-2 rounded-lg border-none text-white bg-slate-800"
+          className={`flex-1 p-2 rounded-lg border-none text-white bg-slate-800 ${
+            isCurrentUserBlocked || isReceiverBlocked
+              ? "cursor-not-allowed opacity-50"
+              : ""
+          }`}
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
           onChange={(e) => setText(e.target.value)}
         />
         <div className="cursor-pointer relative">
@@ -230,8 +240,13 @@ function Chat() {
           </div>
         </div>
         <button
-          className="bg-indigo-800 py-2 px-3 rounded-lg"
+          className={`bg-indigo-800 py-2 px-3 rounded-lg ${
+            isCurrentUserBlocked || isReceiverBlocked
+              ? "cursor-not-allowed opacity-50"
+              : ""
+          }`}
           onClick={handleSend}
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
         >
           Send
         </button>

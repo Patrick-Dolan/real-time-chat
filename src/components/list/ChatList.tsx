@@ -129,9 +129,13 @@ function ChatList() {
             key={chat.chatId}
             onClick={() => handleChatSelect(chat)}
           >
-            <Avatar size="sm" rounded={true} avatarURL={chat.user.avatar} />
+            <Avatar size="sm" rounded={true} avatarURL={ chat.user.blocked.includes(currentUser?.id) ? "" : chat.user.avatar} />
             <div className="text">
-              <span className="font-medium">{chat.user.username}</span>
+              <span className="font-medium">
+                {chat.user.blocked.includes(currentUser?.id)
+                  ? "User"
+                  : chat.user.username}
+              </span>
               <p className="text-sm font-light">{chat.lastMessage}</p>
             </div>
           </div>
