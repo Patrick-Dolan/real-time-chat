@@ -9,11 +9,21 @@ import { useFirebaseContext } from "./context/FirebaseContext";
 
 function App() {
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-  const { currentUser } = useFirebaseContext();
+  const { currentUser, isLoading } = useFirebaseContext();
 
   useEffect(() => {
     setLoggedInUser(currentUser);
   }, [currentUser]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <h1 className="text-4xl font-bold px-16 py-8 bg-slate-700 rounded-lg">
+          Loading...
+        </h1>
+      </div>
+    );
+  }
 
   return (
     <div className="m-auto w-11/12 h-full bg-slate-400 dark:bg-slate-700 flex">
