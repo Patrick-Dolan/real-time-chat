@@ -27,6 +27,7 @@ interface AppUser extends User {
 
 type FirebaseContextType = {
   currentUser: AppUser | null;
+  isLoading: boolean;
   logout: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   registerUser: (user: UserDetails) => Promise<void>;
@@ -38,6 +39,7 @@ export const FirebaseContextProvider = ({
   children,
 }: FirebaseContextProviderProps) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getUserData = async (user: User) => {
     try {
@@ -59,8 +61,10 @@ export const FirebaseContextProvider = ({
     const unSubscribe = onAuthStateChanged(auth, (user) => {
       if (user?.uid) {
         getUserData(user);
+        setIsLoading(false);
       } else {
         setCurrentUser(null);
+        setIsLoading(false);
       }
     });
 
@@ -103,6 +107,7 @@ export const FirebaseContextProvider = ({
     <FirebaseContext.Provider
       value={{
         currentUser,
+        isLoading,
         logout,
         signIn,
         registerUser,
