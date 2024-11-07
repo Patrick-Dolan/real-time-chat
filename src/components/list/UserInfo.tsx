@@ -1,13 +1,20 @@
+import { useFirebaseContext } from "../../context/FirebaseContext";
 import Avatar from "../shared/Avatar";
 
 function UserInfo() {
+  const { currentUser } = useFirebaseContext();
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <Avatar size="sm" rounded={true} />
-        <h2 className="font-bold">John Doe</h2>
+        <Avatar
+          size="sm"
+          rounded={true}
+          avatarURL={currentUser?.avatar || ""}
+        />
+        <h2 className="font-bold">{currentUser?.username}</h2>
       </div>
-      <div className="flex gap-2 h-5">
+      <div className="flex gap-2 h-5 cursor-not-allowed">
         <img src="/assets/icons/MoreHorizontalIcon.svg" alt="More" />
         <img src="/assets/icons/VideoCamIcon.svg" alt="Video" />
         <img src="/assets/icons/EditIcon.svg" alt="Edit" />
