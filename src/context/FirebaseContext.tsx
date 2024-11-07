@@ -20,8 +20,8 @@ interface FirebaseContextProviderProps {
   children: ReactNode;
 }
 
-interface FirebaseContextType {
-  user: User | null;
+type FirebaseContextType = {
+  currentUser: User | null;
   logout: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   registerUser: (user: UserDetails) => Promise<void>;
@@ -32,11 +32,11 @@ const FirebaseContext = createContext<FirebaseContextType | null>(null);
 export const FirebaseContextProvider = ({
   children,
 }: FirebaseContextProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unSubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+      setCurrentUser(user);
     });
 
     return () => {
@@ -44,6 +44,7 @@ export const FirebaseContextProvider = ({
     };
   }, []);
 
+  // TODO: look into cleanup system should any of these promises fail
   const registerUser = async (user: UserDetails) => {
     // Register user with auth
     const response = await createUserWithEmailAndPassword(
@@ -76,7 +77,7 @@ export const FirebaseContextProvider = ({
   return (
     <FirebaseContext.Provider
       value={{
-        user,
+        currentUser,
         logout,
         signIn,
         registerUser,
