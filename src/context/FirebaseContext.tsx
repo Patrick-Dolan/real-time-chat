@@ -24,6 +24,9 @@ interface FirebaseContextProviderProps {
 interface AppUser extends User {
   username: string;
   avatar: string;
+  email: string;
+  blocked: Array<string>;
+  id: string;
 }
 
 type FirebaseContextType = {
