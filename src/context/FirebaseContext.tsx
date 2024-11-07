@@ -13,30 +13,55 @@ import {
   useState,
 } from "react";
 import { auth, db } from "../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { UserDetails } from "../interfaces";
+import { toast } from "react-toastify";
 
 interface FirebaseContextProviderProps {
   children: ReactNode;
 }
 
+interface AppUser extends User {
+  username: string;
+}
+
 type FirebaseContextType = {
-  currentUser: User | null;
+  currentUser: AppUser | null;
   logout: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   registerUser: (user: UserDetails) => Promise<void>;
-}
+};
 
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
 
 export const FirebaseContextProvider = ({
   children,
 }: FirebaseContextProviderProps) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+
+  const getUserData = async (user: User) => {
+    try {
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const userData: AppUser = {
+          ...(docSnap.data() as AppUser),
+        };
+        console.log(userData);
+        setCurrentUser(userData);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   useEffect(() => {
     const unSubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+      if (user?.uid) {
+        getUserData(user);
+      } else {
+        setCurrentUser(null);
+      }
     });
 
     return () => {
