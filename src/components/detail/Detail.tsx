@@ -1,8 +1,8 @@
-import { useFirebaseContext } from "../../context/FirebaseContext";
+import { useUserContext } from "../../context/UserContext";
 import Avatar from "../shared/Avatar";
 
 function Detail() {
-  const { logout } = useFirebaseContext();
+  const { logout } = useUserContext();
 
   return (
     <div className="w-1/4 overflow-y-auto">

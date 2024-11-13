@@ -17,7 +17,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { UserDetails } from "../interfaces";
 import { toast } from "react-toastify";
 
-interface FirebaseContextProviderProps {
+interface UserContextProviderProps {
   children: ReactNode;
 }
 
@@ -29,7 +29,7 @@ interface AppUser extends User {
   id: string;
 }
 
-type FirebaseContextType = {
+type UserContextType = {
   currentUser: AppUser | null;
   isLoading: boolean;
   logout: () => void;
@@ -37,11 +37,9 @@ type FirebaseContextType = {
   registerUser: (user: UserDetails) => Promise<void>;
 };
 
-const FirebaseContext = createContext<FirebaseContextType | null>(null);
+const UserContext = createContext<UserContextType | null>(null);
 
-export const FirebaseContextProvider = ({
-  children,
-}: FirebaseContextProviderProps) => {
+export const UserContextProvider = ({ children }: UserContextProviderProps) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -53,7 +51,8 @@ export const FirebaseContextProvider = ({
         const userData: AppUser = {
           ...(docSnap.data() as AppUser),
         };
-        console.log(userData);
+        // TODO remove console log when finished
+        console.log("User data: ", userData);
         setCurrentUser(userData);
       }
     } catch (e) {
@@ -108,7 +107,7 @@ export const FirebaseContextProvider = ({
   };
 
   return (
-    <FirebaseContext.Provider
+    <UserContext.Provider
       value={{
         currentUser,
         isLoading,
@@ -118,13 +117,13 @@ export const FirebaseContextProvider = ({
       }}
     >
       {children}
-    </FirebaseContext.Provider>
+    </UserContext.Provider>
   );
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useFirebaseContext = () => {
-  const contextValue = useContext(FirebaseContext);
+export const useUserContext = () => {
+  const contextValue = useContext(UserContext);
   if (!contextValue) {
     throw new Error(
       "useFirebaseContext must be used within a FirebaseContextProvider."

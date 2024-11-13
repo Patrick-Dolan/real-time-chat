@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import Avatar from "../shared/Avatar";
 import { toast } from "react-toastify";
 import uploadImage from "../../lib/uploadImage";
-import { useFirebaseContext } from "../../context/FirebaseContext";
+import { useUserContext } from "../../context/UserContext";
 import { UserDetails } from "../../interfaces";
 
 interface AvatarFile {
@@ -27,7 +27,7 @@ function Login() {
   const [avatar, setAvatar] = useState<AvatarFile>({ file: null, url: "" });
   const [loading, setLoading] = useState(false);
 
-  const { signIn, registerUser } = useFirebaseContext();
+  const { signIn, registerUser } = useUserContext();
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

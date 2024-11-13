@@ -5,11 +5,11 @@ import List from "./components/list/List";
 import Login from "./components/login/Login";
 import Notification from "./components/shared/Notification";
 import { User } from "firebase/auth";
-import { useFirebaseContext } from "./context/FirebaseContext";
+import { useUserContext } from "./context/UserContext";
 
 function App() {
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-  const { currentUser, isLoading } = useFirebaseContext();
+  const { currentUser, isLoading } = useUserContext();
 
   useEffect(() => {
     setLoggedInUser(currentUser);

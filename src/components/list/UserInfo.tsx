@@ -1,8 +1,8 @@
-import { useFirebaseContext } from "../../context/FirebaseContext";
+import { useUserContext } from "../../context/UserContext";
 import Avatar from "../shared/Avatar";
 
 function UserInfo() {
-  const { currentUser } = useFirebaseContext();
+  const { currentUser } = useUserContext();
 
   return (
     <div className="flex items-center justify-between">
